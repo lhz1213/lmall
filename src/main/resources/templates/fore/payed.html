@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('支付成功')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/simpleSearch::simpleSearch" ></div>
+    <div th:replace="fore/include/cart/payedPage::payedPage" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+<script>
+
+var oid = getUrlParams("oid");
+var total = getUrlParams("total");
+
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	order:[],
+        total:0
+    },
+    mounted:function(){ 
+        this.total = total;
+        this.load();
+    },       
+    methods: {     
+        load:function(){
+            axios.get("forepayed?oid="+oid).then(function(response) {
+            	if(response.data.code==1){
+            		alert(response.data.msg);
+            	}else{           		
+                	vue.order = response.data.obj;
+            	}
+            });
+        }
+    }
+});                
+
+</script>
+</body>
+</html>

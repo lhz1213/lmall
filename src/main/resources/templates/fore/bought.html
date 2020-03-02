@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('我的订单')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/cart/boughtPage::boughtPage" ></div>
+    <div th:replace="fore/include/modal4deleteConfirm::html" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+
+
+
+<script>
+            var vue = new Vue({
+                el: '#workingArea',
+                data: {
+                	orders:[]
+                },
+                mounted:function(){ 
+                    this.load();
+                },       
+                methods: {     
+                    load:function(){
+                        axios.get("forebought").then(function(response) {
+                            vue.orders = response.data;
+                            vue.$nextTick(function(){
+                                linkDefaultActions();
+                                orderPageRegisterListeners();
+                            })
+                        });
+                    }
+                }
+            });                    
+        var deleteOrder = false;
+        var deleteOrderid = 0;
+         
+        function orderPageRegisterListeners(){
+            $("a[orderStatus]").click(function(){
+                var orderStatus = $(this).attr("orderStatus");
+                if('all'==orderStatus){
+                    $("table[orderStatus]").show();
+                }
+                else{
+                    $("table[orderStatus]").hide();
+                    $("table[orderStatus="+orderStatus+"]").show();        
+                }
+                 
+                $("div.orderType div").removeClass("selectedOrderType");
+                $(this).parent("div").addClass("selectedOrderType");
+            });
+             
+            $("a.deleteOrderLink").click(function(){
+                deleteOrderid = $(this).attr("oid");
+                deleteOrder = false;
+                $("#deleteConfirmModal").modal("show");
+            });
+             
+            $("button.deleteConfirmButton").click(function(){
+                deleteOrder = true;
+                $("#deleteConfirmModal").modal('hide');
+            });
+             
+            $('#deleteConfirmModal').on('hidden.bs.modal', function (e) {
+                if(deleteOrder){
+                    var uri = "foredeleteOrder?oid="+deleteOrderid;
+                    axios.put(uri).then(function(response){
+                        if(0==response.data.code){
+                            $("table.orderListItemTable[oid="+deleteOrderid+"]").hide();
+                        }else if(1==response.data.code){
+                        	alert(response.data.msg);
+                        }
+                        else{
+                            location.href="login";
+                        }                      
+                    });
+                }
+            })
+        }
+</script>
+</body>
+</html>

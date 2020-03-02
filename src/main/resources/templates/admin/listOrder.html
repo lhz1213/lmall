@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('订单管理')" ></head>
+<body>
+   <div th:replace="admin/include/adminNavigator::navigator" ></div>
+
+<div id="workingArea" >
+    <h1 class="label label-info" >订单管理</h1>
+    <br>
+    <br>
+ 
+    <div class="listDataTableDiv">
+        <table class="table table-striped table-bordered table-hover  table-condensed">
+            <thead>
+            <tr class="success">
+                <th>状态</th>
+                <th>金额</th>
+                <th>商品数量</th>
+                <th>买家名称</th>
+                <th>收货地址</th>
+                <th>联系方式</th>
+                <th>收货人</th>
+                <th>备注</th>
+                <th>创建时间</th>
+                <th>支付时间</th>
+                <th>发货时间</th>
+                <th>确认收货时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>           
+            <template v-for="bean in beans">
+                <tr >
+                    <td>{{bean.statusDesc}}</td>
+                    <td>{{bean.total}}</td>
+                    <td>{{bean.totalNumber}}</td>
+                    <td>{{bean.user.name}}</td>
+                    <td>{{bean.address}}</td>
+                    <td>{{bean.mobile}}</td>
+                    <td>{{bean.receiver}}</td>
+                    <td>{{bean.userMessage}}</td>
+                    <td>{{bean.createDate | formatDateFilter}}</td>
+                    <td>{{bean.payDate | formatDateFilter}}</td>
+                    <td>{{bean.deliveryDate | formatDateFilter}}</td>
+                    <td>{{bean.confirmDate | formatDateFilter}}</td>
+                    <td>
+                        <button @click="showOrderItems(bean)" class="orderPageCheckOrderItems btn btn-primary btn-xs">查看/隐藏详情</button>
+                        <button v-if="bean.status==1" @click="deliveryOrder(bean,$event)" class="btn btn-primary btn-xs">发货</button>
+                    </td>
+                </tr>
+                <tr class="orderPageOrderItemTR"  :id="'orderItemsTR'+bean.id">
+                    <td colspan="10" align="center">
+                        <div  class="orderPageOrderItem">
+                            <table width="800px" align="center" class="orderPageOrderItemTable">
+                                <tr v-for="orderItem in bean.orderItems">
+                                    <td align="left">
+                                        <img v-if="null !=orderItem.product.firstProductImage" width="40px" height="40px" :src="'img/productSingle/'+orderItem.product.firstProductImage.id+'.jpg'">
+                                    </td>
+                                    <td>
+                                        <a :href="'product?product.id='+orderItem.product.id">
+                                            <span>{{orderItem.product.name}}</span>
+                                        </a>
+                                    </td>
+                                    <td align="right">
+                                        <span class="text-muted">{{orderItem.number}}个</span>
+                                    </td>
+                                    <td align="right">
+                                        <span class="text-muted">单价：￥{{orderItem.product.promotePrice}}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+    </div>
+ 
+    <div th:replace="admin/include/adminPage::page" ></div>
+ 
+</div>
+        
+   <div th:replace="admin/include/adminFooter::footer" ></div>
+        
+        
+        
+        
+        
+        
+        
+<script>      
+
+    var vue = new Vue({
+        el: '#workingArea',
+        data: {
+        	show_tag:'hide',
+        	beans: [],
+            pagination:{}
+        },
+        created:function(){ 
+            this.list(0);
+        },
+        methods: {
+            list:function(start){
+                axios.get("orders",{params:{"start":start}}).then(function(response) {
+                    vue.pagination = response.data;
+                    vue.beans = response.data.list;
+                });
+            },
+            showOrderItems: function(order){
+                var id = order.id;
+                if("hide"==this.show_tag)
+                {               
+                    $("#orderItemsTR"+id).show();
+                    this.show_tag="show";
+                }
+                else
+                {
+                    $("#orderItemsTR"+id).hide();
+                    this.show_tag="hide";
+                }
+            },
+            jump: function(page){
+                jump(page,vue); 
+            },
+            jumpByNumber: function(start){
+                jumpByNumber(start,vue);
+            },
+            deliveryOrder:function(order,e){
+                axios.put("deliveryOrder/"+order.id).then(function(response) {
+                    vue.list(0);
+                });
+            }
+        }
+    });
+
+    Vue.filter('formatDateFilter', function (value, formatString) {
+        if(null==value)
+            return "";
+        formatString = formatString || 'YYYY-MM-DD HH:mm:ss';
+        return moment(value).format(formatString);
+    });
+
+</script>
+        
+</body>
+</html>

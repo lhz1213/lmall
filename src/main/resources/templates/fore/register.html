@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('注册')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/simpleSearch::simpleSearch" ></div>
+    <div th:replace="fore/include/account/registerPage::registerPage" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+<script>
+
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	result: [],
+        user:{name:'', password:'', repeatpassword:''}
+    },
+    mounted:function(){
+        linkDefaultActions();
+    },
+    methods: {
+        register:function(){
+            if(0==this.user.name.length){
+                $("span.errorMessage").html("请输入用户名");
+                $("div.registerErrorMessageDiv").css("visibility","visible");
+                return;
+            }
+            if(0==this.user.password.length){
+                $("span.errorMessage").html("请输入密码");
+                $("div.registerErrorMessageDiv").css("visibility","visible");
+                return;
+            }
+            if(0==this.user.repeatpassword.length){
+                $("span.errorMessage").html("请输入重复密码");
+                $("div.registerErrorMessageDiv").css("visibility","visible");
+                return;
+            }
+            if(this.user.password !=this.user.repeatpassword){
+                $("span.errorMessage").html("重复密码不一致");
+                $("div.registerErrorMessageDiv").css("visibility","visible");
+                return;
+            }
+
+            axios.post("foreregister",this.user).then(function(response) {
+                var result = response.data;
+                if(result.code==0){
+                    location.href="registerSuccess";
+                }
+                else{
+                    $("span.errorMessage").html(result.msg);
+                    $("div.registerErrorMessageDiv").css("visibility","visible");
+                }
+            });
+        }
+    }
+});
+
+</script>
+
+</body>
+</html>

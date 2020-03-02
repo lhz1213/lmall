@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('商品页')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/search::search" ></div>
+    <div th:replace="fore/include/product/productPage::productPage" ></div>
+    <div th:replace="fore/include/modal4login::modal4login" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+
+<script>
+var pid = getUrlParams("pid");
+
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	p:'',
+        category:null,
+        firstProductImage:null,
+        pvs:[],
+        reviews:[],
+        showDetail:true,
+        showReview:false,
+        user:{name:'', password:''}
+    },
+    mounted:function(){ 
+    	linkDefaultActions();
+        this.load();
+    },
+    methods: {
+        load:function(){
+            axios.get("foreproduct/"+pid).then(function(response) {
+                vue.p=response.data.product;
+                vue.pvs=response.data.pvs;
+                vue.reviews=response.data.reviews;
+
+                vue.category = vue.p.category;
+                vue.firstProductImage = vue.p.firstProductImage;
+                vue.$nextTick(function(){
+                	
+                    imgAndInfoPageRegisterListeners(vue);
+                })
+            });
+
+        },
+        toggle2Detail:function(){
+            this.showDetail=true;
+            this.showReview=false;
+        },
+        toggle2Review:function(){
+            this.showDetail=false;
+            this.showReview=true;
+        }
+    }
+});
+
+function imgAndInfoPageRegisterListeners(vue){
+    var stock = vue.p.stock;
+    $(".productNumberSetting").keyup(function(){
+        var num= $(".productNumberSetting").val();
+        num = parseInt(num);
+        if(isNaN(num))
+            num= 1;
+        if(num<=0)
+            num = 1;
+        if(num>stock)
+            num = stock;
+        $(".productNumberSetting").val(num);
+    });
+      
+    $(".increaseNumber").click(function(){
+        var num= $(".productNumberSetting").val();
+        num++;
+        if(num>stock)
+            num = stock;
+        $(".productNumberSetting").val(num);
+    });
+    $(".decreaseNumber").click(function(){
+        var num= $(".productNumberSetting").val();
+        --num;
+        if(num<=0)
+            num=1;
+        $(".productNumberSetting").val(num);
+    });
+      
+    $(".addCartButton").removeAttr("disabled");
+    $(".addCartLink").click(function(){
+        var url = "forecheckLogin";
+        axios.get(url).then(function(response) {
+            if(0==response.data.code){
+                var pid = vue.p.id;
+                var num= $(".productNumberSetting").val();
+                var url =  "foreaddCart?pid="+pid+"&num="+num;
+                axios.get(url).then(function(response) {
+                    if(0==response.data.code){
+                        $(".addCartButton").html("已加入购物车");
+                        $(".addCartButton").attr("disabled","disabled");
+                        $(".addCartButton").css("background-color","lightgray")
+                        $(".addCartButton").css("border-color","lightgray")
+                        $(".addCartButton").css("color","black")
+                    }
+                });
+            }
+            else{
+                $("#loginModal").modal('show');                    
+            }          
+        });
+    });
+    $(".buyLink").click(function(){
+        var url = "forecheckLogin";
+        axios.get(url).then(function(response) {
+            if(0==response.data.code){
+                 var pid = vue.p.id;
+                 var num= $(".productNumberSetting").val();
+                 var url =  "forebuyone?pid="+pid+"&num="+num;
+                 axios.get(url).then(function(response) {
+                    var oiid = response.data;
+                    location.href="buy?oiid="+oiid;
+                 });                       
+            }
+            else{
+                $("#loginModal").modal('show');                    
+            }
+        });
+        return false;
+    });
+      
+    $("button.loginSubmitButton").click(function(){
+        if(0==vue.user.name.length){
+            $("span.errorMessage").html("请输入用户名");
+            $("div.loginErrorMessageDiv").css("visibility","visible");
+            return;
+        }
+        if(0==vue.user.password.length){
+            $("span.errorMessage").html("请输入密码");
+            $("div.loginErrorMessageDiv").css("visibility","visible");
+            return;
+        }                   
+         
+        axios.post("forelogin",vue.user).then(function(response) {
+            var result = response.data;
+            if(result.code==0){
+                location.href="product?pid="+vue.p.id;
+            }
+            else{
+                $("span.errorMessage").html(result.msg);
+                $("div.loginErrorMessageDiv").css("visibility","visible");                             
+            }
+        });
+    });
+      
+    $("img.smallImage").mouseenter(function(){
+        var bigImageURL = $(this).attr("bigImageURL");
+        $("img.bigImg").attr("src",bigImageURL);
+    });
+      
+    /* $("img.bigImg").load(
+        function(){
+            $("img.smallImage").each(function(){
+                var bigImageURL = $(this).attr("bigImageURL");
+                img = new Image();
+                img.src = bigImageURL;
+                  
+                img.onload = function(){
+                    $("div.img4load").append($(img));
+                };
+            });    
+        }
+    ); */
+}
+ 
+</script>
+
+
+
+    
+
+</body>
+</html>

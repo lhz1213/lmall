@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('商品列表')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/search::search" ></div>
+    <div th:replace="fore/include/category/categoryPage::categoryPage" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+
+<script>
+
+var cid = getUrlParams("cid");
+var sort = getUrlParams("sort");
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	c:'',
+        sort:''
+    },
+    mounted:function(){ 
+        this.load();
+    },       
+    methods: {     
+        load:function(){
+            this.sort = sort;
+            var url = "forecategory/"+cid+"?sort="+sort;
+            axios.get(url).then(function(response) {
+                vue.c = response.data;
+                vue.$nextTick(function(){
+                    linkDefaultActions();
+                })
+            });
+             
+        }
+    }
+});
+
+
+    $("input.sortBarPrice").keyup(function(){
+        var num= $(this).val();
+        if(num.length==0){
+            $("div.productUnit").show();
+            return;
+        }
+             
+        num = parseInt(num);
+        if(isNaN(num))
+            num= 1;
+        if(num<=0)
+            num = 1;
+        $(this).val(num);      
+         
+        var begin = $("input.beginPrice").val();
+        var end = $("input.endPrice").val();
+        end = end<=0?999999:end;
+        begin= begin>=end?0:begin;
+        if(!isNaN(begin) && !isNaN(end)){
+            $("div.productUnit").hide();
+            $("div.productUnit").each(function(){
+                var price = $(this).attr("price");
+                price = new Number(price);
+                 
+                if(price<=end && price>=begin)
+                    $(this).show();
+            });
+        }
+         
+    });
+    
+    $("a.sort").click(function () {
+        sort = $(this).attr("sort");
+        vue.load();
+    })
+
+
+</script>
+</body>
+</html>

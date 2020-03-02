@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('访问失败')" ></head>
+<body>
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<h3 class="text-center muted">
+				权限不足
+			</h3> 
+			<br>
+			<br>
+			<div style="text-align:center">
+                  <a th:href="${application.contextPath}"><button type="button" class="btn btn-default">返回首页</button></a>      
+ 			</div>
+			
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

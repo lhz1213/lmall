@@ -1,0 +1,11 @@
+<div th:fragment="categoryPage">
+    
+       
+    <div id="category">
+        <div class="categoryPageDiv">
+            <img v-if="c.id!=null" :src="'img/category/'+c.id+'.jpg'">
+            <div th:replace="fore/include/category/sortBar::sortBar" ></div>  
+            <div th:replace="fore/include/category/productsByCategory::html" ></div>   
+        </div>
+    </div>
+</div>

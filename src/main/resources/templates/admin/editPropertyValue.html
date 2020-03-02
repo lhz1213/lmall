@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('产品属性管理')" ></head>
+<body>
+<div th:replace="admin/include/adminNavigator::navigator" ></div>
+
+<div id="workingArea" >
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a :href="'admin_product_list?cid='+category.id">{{category.name}}</a></li>
+        <li class="active">{{product.name}}</li>
+        <li class="active">产品属性管理</li>
+    </ol>
+ 
+    <div class="editPVDiv">
+        <div v-for="bean in beans" class="eachPV">
+            <span class="pvName" >{{bean.property.name}}</span>
+            <span class="pvValue"><input class="pvValue" :id="'pvid'+bean.id" type="text" v-model="bean.value" @keyup.enter="update(bean)"></span>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+ 
+</div>
+ <div th:replace="admin/include/adminFooter::footer" ></div>
+
+
+
+
+
+
+
+<script>
+
+    var pid = getUrlParams("pid");
+    var vue = new Vue({
+        el: '#workingArea',
+        data: {
+        	beans: [],
+            product: '',
+            category:''
+        },
+        created:function(){ 
+            this.getProduct(pid);
+            this.list();
+        },
+        methods: {
+            list:function(){
+                var url = "products/"+pid+"/propertyValues";
+                axios.get(url).then(function(response) {
+                    vue.beans = response.data;
+                });
+            },
+            getProduct:function(pid){
+                axios.get("products/"+pid).then(function(response) {
+                    vue.product = response.data;
+                    vue.category = vue.product.category;
+                })
+            },
+            update:function(bean){
+                var url =  this.uri;
+                var id = bean.id;
+                $("#pvid"+bean.id).css("border","2px solid yellow");
+                axios.put("propertyValues",bean).then(function(response) {
+                    if(bean.id==response.data.id)
+                        $("#pvid"+bean.id).css("border","2px solid green");
+                    else
+                        $("#pvid"+bean.id).css("border","2px solid red");
+                });
+            }
+        }
+
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('购物车')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/simpleSearch::simpleSearch" ></div>
+    <div th:replace="fore/include/cart/cartPage::cartPage" ></div>
+    <div th:replace="fore/include/modal4deleteConfirm::html" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+
+<script>
+	var vue = new Vue({
+	    el: '#workingArea',
+	    data: {
+	    	orderItems:[]
+	    },
+	    mounted:function(){ 
+	        this.load();
+	    },       
+	    methods: {     
+	        load:function(){
+	            axios.get("forecart").then(function(response) {
+	                vue.orderItems = response.data;
+	                vue.$nextTick(function(){
+	                    linkDefaultActions();
+	                    cartPageRegisterListeners();
+	                })
+	            });
+	        }
+	    }
+	});                
+
+	var deleteOrderItem = false;
+	var deleteOrderItemid = 0;
+	function cartPageRegisterListeners(){
+		$("a.deleteOrderItem").click(function(){
+		    deleteOrderItem = false;
+		    var oiid = $(this).attr("oiid")
+		    deleteOrderItemid = oiid;
+		    $("#deleteConfirmModal").modal("show");   
+		});
+		$("button.deleteConfirmButton").click(function(){
+		    deleteOrderItem = true;
+		    $("#deleteConfirmModal").modal("hide");
+		});
+	 
+		$("#deleteConfirmModal").on("hidden.bs.modal", function (e) {
+		    if(deleteOrderItem){              
+		        var url = "foredeleteOrderItem?oiid="+deleteOrderItemid;
+		        axios.get(url).then(function(response){
+		            if(0==response.data.code){
+		           		$("tr.cartProductItemTR[oiid="+deleteOrderItemid+"]").remove();
+		                calcCartSumPriceAndNumber(); 
+		                
+		            }
+		            else{
+		                location.href="login";
+		            }
+		        });
+		    }
+		}); 
+	 	//是否选择
+		$("img.cartProductItemIfSelected").click(function(){
+		    var selectit = $(this).attr("selectit")
+		    if("selectit"==selectit){
+		        $(this).attr("src","img/site/cartNotSelected.png");
+		        $(this).attr("selectit","false")
+		        $(this).parents("tr.cartProductItemTR").css("background-color","#fff");
+		    }
+		    else{
+		        $(this).attr("src","img/site/cartSelected.png");
+		        $(this).attr("selectit","selectit")
+		        $(this).parents("tr.cartProductItemTR").css("background-color","#FFF8E1");
+		    }
+		    syncSelect();
+		    syncCreateOrderButton();
+		    calcCartSumPriceAndNumber();
+		});
+		//全选
+		$("img.selectAllItem").click(function(){
+		    var selectit = $(this).attr("selectit")
+		    if("selectit"==selectit){
+		        $("img.selectAllItem").attr("src","img/site/cartNotSelected.png");
+		        $("img.selectAllItem").attr("selectit","false")
+		        $(".cartProductItemIfSelected").each(function(){
+		            $(this).attr("src","img/site/cartNotSelected.png");
+		            $(this).attr("selectit","false");
+		            $(this).parents("tr.cartProductItemTR").css("background-color","#fff");
+		        });        
+		    }
+		    else{
+		        $("img.selectAllItem").attr("src","img/site/cartSelected.png");
+		        $("img.selectAllItem").attr("selectit","selectit")
+		        $(".cartProductItemIfSelected").each(function(){
+		            $(this).attr("src","img/site/cartSelected.png");
+		            $(this).attr("selectit","selectit");
+		            $(this).parents("tr.cartProductItemTR").css("background-color","#FFF8E1");
+		        });            
+		    }
+		    syncCreateOrderButton();
+		    calcCartSumPriceAndNumber();
+		     
+		});
+	    //输入数量
+		$(".orderItemNumberSetting").keyup(function(){
+		    var pid=$(this).attr("pid");
+		    var stock= $("span.orderItemStock[pid="+pid+"]").text();
+		    var price= $("span.orderItemPromotePrice[pid="+pid+"]").text();
+		     
+		    var num= $(".orderItemNumberSetting[pid="+pid+"]").val();
+		    num = parseInt(num);
+		    if(isNaN(num))
+		        num= 1;
+		    if(num<=0)
+		        num = 1;
+		    if(num>stock)
+		        num = stock;
+		     
+		    syncPrice(pid,num,price);
+		});
+	
+		//增减数量
+		$(".numberPlus").click(function(){		     
+		    var pid=$(this).attr("pid");
+		    var stock= $("span.orderItemStock[pid="+pid+"]").text();
+		    var price= $("span.orderItemPromotePrice[pid="+pid+"]").text();
+		    var num= $(".orderItemNumberSetting[pid="+pid+"]").val();		
+		    num++;
+		    if(num>stock)
+		        num = stock;
+		    syncPrice(pid,num,price);
+		});
+		$(".numberMinus").click(function(){
+		    var pid=$(this).attr("pid");
+		    var stock= $("span.orderItemStock[pid="+pid+"]").text();
+		    var price= $("span.orderItemPromotePrice[pid="+pid+"]").text();		     
+		    var num= $(".orderItemNumberSetting[pid="+pid+"]").val();
+		    --num;
+		    if(num<=0)
+		        num=1;
+		    syncPrice(pid,num,price);
+		});
+	 
+		//提交
+		$("button.createOrderButton").click(function(){
+		    var params = "";
+		    $(".cartProductItemIfSelected").each(function(){
+		        if("selectit"==$(this).attr("selectit")){
+		            var oiid = $(this).attr("oiid");
+		            params += "&oiid="+oiid;
+		        }
+		    });
+		    params = params.substring(1);
+		    location.href="buy?"+params;
+		});
+	}
+	
+	
+	//结算按钮
+	function syncCreateOrderButton(){
+		var selectAny = false;
+		$(".cartProductItemIfSelected").each(function(){
+		    if("selectit"==$(this).attr("selectit")){
+		        selectAny = true;
+		    }
+		});
+	 
+		if(selectAny){
+		    $("button.createOrderButton").css("background-color","#C40000");
+		    $("button.createOrderButton").removeAttr("disabled");
+		}
+		else{
+		    $("button.createOrderButton").css("background-color","#AAAAAA");
+		    $("button.createOrderButton").attr("disabled","disabled");     
+		}
+	     
+	}
+	
+	//全选按钮
+	function syncSelect(){
+		var selectAll = true;
+		$(".cartProductItemIfSelected").each(function(){
+		    if("false"==$(this).attr("selectit")){
+		        selectAll = false;
+		    }
+		});
+	 
+		if(selectAll)
+		    $("img.selectAllItem").attr("src","img/site/cartSelected.png");
+		else
+		    $("img.selectAllItem").attr("src","img/site/cartNotSelected.png");
+	 
+	}
+	
+	//计算数量和金额
+	function calcCartSumPriceAndNumber(){
+		var sum = 0;
+		var totalNumber = 0;
+		$("img.cartProductItemIfSelected[selectit='selectit']").each(function(){
+		    var oiid = $(this).attr("oiid");
+		    var price =$(".cartProductItemSmallSumPrice[oiid="+oiid+"]").text();
+		    price = price.replace(/,/g, "");
+		    price = price.replace(/￥/g, "");
+		    sum += new Number(price);  
+		     
+		    var num =$(".orderItemNumberSetting[oiid="+oiid+"]").val();
+		    totalNumber += new Number(num);
+		     
+		});
+	 
+		$("span.cartSumPrice").html("￥"+formatMoney(sum));
+		$("span.cartTitlePrice").html("￥"+formatMoney(sum));
+		$("span.cartSumNumber").html(totalNumber);
+	}
+	
+	//更改订单
+	function syncPrice(pid,num,price){
+		$(".orderItemNumberSetting[pid="+pid+"]").val(num);
+		var cartProductItemSmallSumPrice = formatMoney(num*price);
+		$(".cartProductItemSmallSumPrice[pid="+pid+"]").html("￥"+cartProductItemSmallSumPrice);
+		calcCartSumPriceAndNumber();
+		 
+		var url = "forechangeOrderItem?pid="+pid+"&num="+num;
+		axios.get(url).then(function(response){
+		    if(0!=response.data.code){
+		        location.href="login";
+		    }              
+		});
+	}
+            
+</script>
+</body>
+</html>

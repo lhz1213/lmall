@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('属性管理')" ></head>
+<body>
+   <div th:replace="admin/include/adminNavigator::navigator" ></div>
+
+<div id="workingArea" >
+    <h1 class="label label-info" >用户管理</h1>
+    <br>
+    <br>
+    <div class="listDataTableDiv">
+        <table class="table table-striped table-bordered table-hover  table-condensed">
+            <thead>
+            <tr class="success">
+                <th>ID</th>
+                <th>用户名称</th>
+                
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="bean in beans ">
+                <td>{{bean.id}}</td>
+                <td>{{bean.name}}</td>
+                
+            </tr>
+            </tbody>
+        </table>
+    </div>
+ 
+    <div th:replace="admin/include/adminPage::page" ></div>
+ 
+</div>    
+        
+       <div th:replace="admin/include/adminFooter::footer" ></div>    
+        
+        
+        
+<script>
+
+    var vue = new Vue({
+        el: '#workingArea',
+        data: {
+        	beans: [],
+            pagination:{}
+        },
+        created:function(){ 
+            this.list(0);
+        },
+        methods: {
+            list:function(start){
+                axios.get("users",{params:{"start":start}}).then(function(response) {
+                    vue.pagination = response.data;
+                    vue.beans = response.data.list;
+                });
+            },
+            jump: function(page){
+                jump(page,vue); 
+            },
+            jumpByNumber: function(start){
+                jumpByNumber(start,vue);
+            }
+        }
+    });
+ 
+</script>
+        
+</body>
+</html>

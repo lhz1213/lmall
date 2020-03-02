@@ -1,0 +1,12 @@
+<div th:fragment="productPage">
+    
+ 
+    <div class="categoryPictureInProductPageDiv">
+        <img v-if="category!=null" class="categoryPictureInProductPage" :src="'img/category/'+category.id+'.jpg'">
+    </div>
+    <div class="productPageDiv">
+        <div th:replace="fore/include/product/imgAndInfo::imgAndInfo" ></div>
+        <div th:replace="fore/include/product/productReview::productReview" ></div>
+        <div th:replace="fore/include/product/productDetail::productDetail" ></div>
+    </div>
+</div>

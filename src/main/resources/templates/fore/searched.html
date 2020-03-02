@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('搜索')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/search::search" ></div>
+    <div th:replace="fore/include/search/searchPage::searchPage" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+</div>
+
+
+
+
+
+
+
+<script>
+
+var keyword = getUrlParams("keyword");
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	products:[]
+    },
+    mounted:function(){ 
+        this.load();
+    },       
+    methods: {
+        load:function(){
+            axios.post("foresearch?keyword="+keyword).then(function(response) {
+                vue.products = response.data;
+                vue.$nextTick(function(){
+                    linkDefaultActions();
+                })
+            });
+        }
+    }
+});                
+
+</script>
+</body>
+</html>

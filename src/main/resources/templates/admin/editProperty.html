@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('属性管理')" ></head>
+<body>
+<div th:replace="admin/include/adminNavigator::navigator" ></div>
+
+<div id="workingArea">
+ 
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a :href="'admin_property_list?cid='+category.id">{{category.name}}</a></li>
+        <li class="active">属性管理</li>
+    </ol>
+ 
+    <div class="panel panel-warning editDiv">
+        <div class="panel-heading">编辑属性</div>
+        <div class="panel-body">
+            <table class="editTable">
+                <tr>
+                    <td>属性名称</td>
+                    <td><input v-model.trim="bean.name" type="text" class="form-control"></td>
+                </tr>
+                <tr class="submitTR">
+                    <td colspan="2" align="center">
+                        <a href="#" class="btn btn-success" @click="update">提 交</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+ <div th:replace="admin/include/adminFooter::footer" ></div>
+
+
+
+
+
+
+
+<script>
+ 
+
+        var vue = new Vue({
+            el: '#workingArea',
+            data: {
+            	bean: '',
+                category:''
+            },
+            created:function(){ 
+                this.get();
+            },
+            methods: {
+                get:function(){
+                    var id = getUrlParams("id");
+                    axios.get("properties/"+id).then(function(response) {
+                        vue.bean = response.data;
+                        vue.category = vue.bean.category;
+                    })
+                },
+                update:function () {
+                    if(!checkEmpty(this.bean.name, "属性名称"))
+                        return;
+                    axios.put("properties",vue.bean).then(function(response){
+                        location.href="admin_property_list?cid="+vue.category.id;
+                    });
+                }
+            }
+        });
+</script>
+</body>
+</html>

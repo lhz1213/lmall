@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/include/adminHeader::header('产品管理')" ></head>
+<body>
+<div th:replace="admin/include/adminNavigator::navigator" ></div>
+
+<div id="workingArea">
+ 
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a :href="'admin_product_list?cid='+category.id">{{category.name}}</a></li>
+        <li class="active">产品管理</li>
+    </ol>
+ 
+    <div class="panel panel-warning editDiv">
+        <div class="panel-heading">编辑产品</div>
+        <div class="panel-body">
+            <table class="editTable">
+                <tr>
+                    <td>产品名称</td>
+                    <td><input v-model.trim="bean.name" type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>产品小标题</td>
+                    <td><input v-model.trim="bean.subTitle" type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>原价格</td>
+                    <td><input v-model.trim="bean.originalPrice"  type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>优惠价格</td>
+                    <td><input v-model.trim="bean.promotePrice" type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>库存</td>
+                    <td><input v-model.trim="bean.stock"  type="text" class="form-control"></td>
+                </tr>
+                <tr class="submitTR">
+                    <td colspan="2" align="center">
+                        <a href="#" class="btn btn-success" @click="update">提 交</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+ <div th:replace="admin/include/adminFooter::footer" ></div>
+
+
+
+
+
+
+
+<script>
+ 
+    var vue = new Vue({
+        el: '#workingArea',
+        data:{
+        	bean: '',
+            category:''
+        },
+        created:function(){ 
+            this.get();
+        },
+        methods: {
+            get:function(){
+                var id = getUrlParams("id");
+                axios.get("products/"+id).then(function(response) {
+                    vue.bean = response.data;
+                    vue.category = vue.bean.category;
+                })
+            },
+            update:function () {
+                if(!checkEmpty(this.bean.name, "产品名称"))
+                    return;
+                if (!checkEmpty(this.bean.subTitle, "小标题"))
+                    return;
+                if (!checkNumber(this.bean.originalPrice, "原价格"))
+                    return;
+                if (!checkNumber(this.bean.promotePrice, "优惠价格"))
+                    return;
+                if (!checkInt(this.bean.stock, "库存"))
+                    return;
+                axios.put("products",vue.bean).then(function(response){
+                    location.href="admin_product_list?cid="+vue.category.id;
+                });
+            }
+        }
+    });
+
+</script>
+</body>
+</html>

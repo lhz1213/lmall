@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fore/include/header::header('购买')" ></head>
+<body>
+<div id="workingArea">
+    <div th:replace="fore/include/top::top" ></div>
+    <div th:replace="fore/include/search::search" ></div>
+    <div th:replace="fore/include/cart/buyPage::buyPage" ></div>
+    <div th:replace="fore/include/footer::foot" ></div>
+    
+    
+    
+<script>
+var oiid = getUrlParams("oiid");
+var vue = new Vue({
+    el: '#workingArea',
+    data: {
+    	total:0,
+        orderItems:[],
+        order:{address:'',post:'',receiver:'',mobile:'',userMessage:''}
+    },
+    mounted:function(){ 
+        this.load();
+    },       
+    methods: {     
+        load:function(){
+            axios.get("forebuy/?oiid="+oiid).then(function(response) {
+                vue.total = response.data.total;
+                vue.orderItems = response.data.orderItems;                 
+                vue.$nextTick(function(){
+                    linkDefaultActions();
+                })
+            });
+        },
+        submitOrder:function(){
+            axios.post("forecreateOrder",this.order).then(function(response) {
+            	if(response.data.msg!=null){
+            		alert(response.data.msg);
+            	}else{           		
+	                var oid = response.data.oid;
+	                var total = response.data.total;
+	                location.href="alipay?oid="+oid+"&total="+total;
+            	}
+            });                    
+        }
+    }
+});                
+        
+</script>
+</div>
+</body>
+</html>
