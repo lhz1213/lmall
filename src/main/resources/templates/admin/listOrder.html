@@ -13,36 +13,36 @@
         <table class="table table-striped table-bordered table-hover  table-condensed">
             <thead>
             <tr class="success">
-                <th>状态</th>
-                <th>金额</th>
-                <th>商品数量</th>
-                <th>买家名称</th>
-                <th>收货地址</th>
-                <th>联系方式</th>
-                <th>收货人</th>
-                <th>备注</th>
-                <th>创建时间</th>
-                <th>支付时间</th>
-                <th>发货时间</th>
-                <th>确认收货时间</th>
-                <th>操作</th>
+                <th style="text-align: center;">状态</th>
+                <th style="text-align: center;">金额</th>
+                <th style="text-align: center;">商品数量</th>
+                <th style="text-align: center;">买家名称</th>
+                <th style="text-align: center;">收货地址</th>
+                <th style="text-align: center;">联系方式</th>
+                <th style="text-align: center;">收货人</th>
+                <th style="text-align: center;">备注</th>
+                <th style="text-align: center;">创建时间</th>
+                <th style="text-align: center;">支付时间</th>
+                <th style="text-align: center;">发货时间</th>
+                <th style="text-align: center;">确认收货时间</th>
+                <th style="text-align: center;">操作</th>
             </tr>
             </thead>
             <tbody>           
             <template v-for="bean in beans">
                 <tr >
-                    <td>{{bean.statusDesc}}</td>
-                    <td>{{bean.total}}</td>
-                    <td>{{bean.totalNumber}}</td>
-                    <td>{{bean.user.name}}</td>
-                    <td>{{bean.address}}</td>
-                    <td>{{bean.mobile}}</td>
-                    <td>{{bean.receiver}}</td>
-                    <td>{{bean.userMessage}}</td>
-                    <td>{{bean.createDate | formatDateFilter}}</td>
-                    <td>{{bean.payDate | formatDateFilter}}</td>
-                    <td>{{bean.deliveryDate | formatDateFilter}}</td>
-                    <td>{{bean.confirmDate | formatDateFilter}}</td>
+                    <td style="text-align: center;">{{bean.statusDesc}}</td>
+                    <td style="text-align: center;">{{bean.total}}</td>
+                    <td style="text-align: center;">{{bean.totalNumber}}</td>
+                    <td style="text-align: center;">{{bean.user.name}}</td>
+                    <td style="text-align: center;">{{bean.address}}</td>
+                    <td style="text-align: center;">{{bean.mobile}}</td>
+                    <td style="text-align: center;">{{bean.receiver}}</td>
+                    <td style="text-align: center;">{{bean.userMessage}}</td>
+                    <td style="text-align: center;">{{bean.createDate | formatDateFilter}}</td>
+                    <td style="text-align: center;">{{bean.payDate | formatDateFilter}}</td>
+                    <td style="text-align: center;">{{bean.deliveryDate | formatDateFilter}}</td>
+                    <td style="text-align: center;">{{bean.confirmDate | formatDateFilter}}</td>
                     <td>
                         <button @click="showOrderItems(bean)" class="orderPageCheckOrderItems btn btn-primary btn-xs">查看/隐藏详情</button>
                         <button v-if="bean.status==1" @click="deliveryOrder(bean,$event)" class="btn btn-primary btn-xs">发货</button>
